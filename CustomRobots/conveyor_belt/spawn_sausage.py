@@ -6,6 +6,7 @@ import subprocess
 import time
 import random
 import math
+from std_msgs.msg import String
 
 
 class sausageSpawner(Node):
@@ -16,6 +17,22 @@ class sausageSpawner(Node):
         time.sleep(5)
         self.timer = self.create_timer(30.0, self.spawn_sausage)
         self.counter = 0
+        self.graspable_pub = self.create_publisher(
+            String,
+            "/graspable_objects",
+            10
+        )
+        self.publish_graspable_objects()
+    
+    def publish_graspable_objects(self):
+
+        msg = String()
+
+        msg.data = ",".join(
+            [f"box_{i}" for i in range(self.counter)]
+        )
+
+        self.graspable_pub.publish(msg)
 
     def spawn_sausage(self):
 
@@ -48,9 +65,10 @@ class sausageSpawner(Node):
         ]
 
         subprocess.run(cmd)
-
-        self.get_logger().info(f"Spawned {name}")
+        time.sleep(0.2)
         self.counter += 1
+        self.publish_graspable_objects()
+        self.get_logger().info(f"Spawned {name}")
 
 
 def main():
