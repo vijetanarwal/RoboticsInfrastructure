@@ -20,11 +20,11 @@
 
       <collision name="collision">
 
-        <pose>0 0.0001 -0.001 0 0 -0.73</pose>
+        <pose>0 0.0001 -0.01 0 0 -0.73</pose>
 
         <geometry>
           <box>
-            <size>0.02 0.085 0.025</size>
+            <size>0.02 0.085 0.02</size>
           </box>
         </geometry>
 
@@ -44,23 +44,6 @@
           </friction>
         </surface>
       </collision>
-
-      <visual name="collision_visual">
-
-        <pose>0 0.0001 -0.001 0 0 -0.73</pose>
-
-        <geometry>
-          <box>
-            <size>0.02 0.085 0.025</size>
-          </box>
-        </geometry>
-
-        <material>
-          <ambient>1 0 0 0.3</ambient>
-          <diffuse>1 0 0 0.3</diffuse>
-        </material>
-
-      </visual>
 
       <visual name="visual">
 
