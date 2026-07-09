@@ -20,11 +20,11 @@
 
       <collision name="collision">
 
-        <pose>0 0 0 0 0 -0.73</pose>
+        <pose>0 0.0001 -0.001 0 0 -0.73</pose>
 
         <geometry>
           <box>
-            <size>0.025 0.09 0.04</size>
+            <size>0.02 0.085 0.025</size>
           </box>
         </geometry>
 
@@ -47,11 +47,11 @@
 
       <visual name="collision_visual">
 
-        <pose>0 0 0 0 0 -0.73</pose>
+        <pose>0 0.0001 -0.001 0 0 -0.73</pose>
 
         <geometry>
           <box>
-            <size>0.025 0.09 0.04</size>
+            <size>0.02 0.085 0.025</size>
           </box>
         </geometry>
 
