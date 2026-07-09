@@ -44,6 +44,23 @@
 
       </collision>
 
+      <visual name="collision_visual">
+
+        <geometry>
+          <box>
+            <size>0.025 0.09 0.025</size>
+          </box>
+        </geometry>
+
+        <material>
+          <ambient>1 0 0 0.3</ambient>
+          <diffuse>1 0 0 0.3</diffuse>
+        </material>
+
+        <transparency>0.7</transparency>
+
+      </visual>
+
       <visual name="visual">
 
         <pose>0 0 -0.02 1.57 0 0</pose>
