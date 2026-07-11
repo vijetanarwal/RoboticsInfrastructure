@@ -76,7 +76,7 @@ public:
                     std::chrono::steady_clock::now() - startTime[_entity])
                 .count() / 1000.0;
 
-            if (elapsed < 15.0)
+            if (elapsed < 14.0)
             {
                 ApplyForce(_ecm, link);
                 StabilizeMotion(_ecm, link);
