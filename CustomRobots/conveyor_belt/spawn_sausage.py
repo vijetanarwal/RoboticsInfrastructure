@@ -15,7 +15,7 @@ class sausageSpawner(Node):
         super().__init__("sausage_spawner")
 
         time.sleep(5)
-        self.timer = self.create_timer(5.0, self.spawn_sausage)
+        self.timer = self.create_timer(10.0, self.spawn_sausage)
         self.counter = 0
         self.graspable_pub = self.create_publisher(
             String,
@@ -35,6 +35,9 @@ class sausageSpawner(Node):
         self.graspable_pub.publish(msg)
 
     def spawn_sausage(self):
+
+        if self.counter >= 4:
+            return
 
         name = f"box_{self.counter}"
 
