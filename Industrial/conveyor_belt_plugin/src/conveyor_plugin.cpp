@@ -10,6 +10,8 @@
 #include <gz/plugin/Register.hh>
 #include <gz/math/Vector3.hh>
 #include <gz/msgs/wrench.pb.h>
+#include <unordered_set>
+#include <iostream>
 
 namespace box_mover
 {
@@ -18,6 +20,10 @@ class BoxMoverPlugin:
   public gz::sim::System,
   public gz::sim::ISystemPreUpdate
 {
+private:
+
+  std::unordered_set<gz::sim::Entity> initializedObjects;
+
 public:
 
   void PreUpdate(
@@ -43,7 +49,10 @@ public:
         // Eliminar salchichas que han caído al suelo
         if (pos.Z() < 0.1)
         {
+          initializedObjects.erase(_entity);
+
           _ecm.RequestRemoveEntity(_entity);
+
           return true;
         }
 
@@ -57,11 +66,17 @@ public:
 
         for (auto link : links)
         {
-          if (inside)
+          if (!inside)
+            continue;
+
+          if (initializedObjects.find(_entity) == initializedObjects.end())
           {
             ApplyForce(_ecm, link);
-            StabilizeMotion(_ecm, link);
+
+            initializedObjects.insert(_entity);
           }
+
+          StabilizeMotion(_ecm, link);
         }
 
         return true;
@@ -110,6 +125,13 @@ public:
       return;
 
     auto vel = velComp->Data();
+
+    std::cout
+      << "Velocity: "
+      << vel.X() << " "
+      << vel.Y() << " "
+      << vel.Z()
+      << std::endl;
 
     vel.X() = 0;
 
