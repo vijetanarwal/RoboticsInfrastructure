@@ -87,7 +87,7 @@ public:
     gz::sim::EntityComponentManager &_ecm,
     gz::sim::Entity entity)
   {
-    gz::math::Vector3d force(0, -0.5, 0);
+    gz::math::Vector3d force(0, -1.0, 0);
 
     gz::msgs::Wrench wrenchMsg;
 
@@ -118,11 +118,16 @@ public:
     gz::sim::EntityComponentManager &_ecm,
     gz::sim::Entity entity)
   {
+    std::cout << "Inside StabilizeMotion()" << std::endl;
+
     auto velComp =
       _ecm.Component<gz::sim::components::LinearVelocity>(entity);
 
     if (!velComp)
-      return;
+    {
+        std::cout << "No LinearVelocity component" << std::endl;
+        return;
+    }
 
     auto vel = velComp->Data();
 
