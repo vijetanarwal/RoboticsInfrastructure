@@ -73,8 +73,6 @@ public:
             ApplyForce(_ecm, link);
 
             initializedObjects.insert(_entity);
-
-            std::cout << "Applying force to " << name << std::endl;
           }
 
           StabilizeMotion(_ecm, link);
@@ -88,7 +86,7 @@ public:
     gz::sim::EntityComponentManager &_ecm,
     gz::sim::Entity entity)
   {
-    gz::math::Vector3d force(0, -0.5, 0);
+    gz::math::Vector3d force(0, -2.0, 0);
 
     gz::msgs::Wrench wrenchMsg;
 
