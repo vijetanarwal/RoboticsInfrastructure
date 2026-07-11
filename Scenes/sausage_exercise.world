@@ -73,6 +73,11 @@
       <pose>0 0 0 0 0 0</pose>
     </include>
 
+    <include>
+      <uri>model://conveyor_belt</uri>
+      <pose>0 -1.5 0 0 0 0</pose>
+    </include>
+
     <!-- Robot Base (Placeholder) -->
     <model name="robotbase">
       <static>true</static>
