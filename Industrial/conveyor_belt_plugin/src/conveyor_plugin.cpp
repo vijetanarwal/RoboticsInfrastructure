@@ -3,10 +3,14 @@
 #include <gz/sim/components/Model.hh>
 #include <gz/sim/components/Link.hh>
 #include <gz/sim/components/Pose.hh>
+#include <gz/sim/components/ExternalWorldWrenchCmd.hh>
 #include <gz/sim/components/LinearVelocity.hh>
 #include <gz/sim/components/LinearVelocityCmd.hh>
 
 #include <gz/plugin/Register.hh>
+#include <gz/math/Vector3.hh>
+#include <gz/msgs/wrench.pb.h>
+
 namespace box_mover
 {
 
@@ -55,7 +59,8 @@ public:
         {
           if (inside)
           {
-              SetVelocity(_ecm, link);
+            ApplyForce(_ecm, link);
+            StabilizeMotion(_ecm, link);
           }
         }
 
@@ -63,25 +68,64 @@ public:
       });
   }
 
-  void SetVelocity(
-      gz::sim::EntityComponentManager &_ecm,
-      gz::sim::Entity entity)
+  void ApplyForce(
+    gz::sim::EntityComponentManager &_ecm,
+    gz::sim::Entity entity)
   {
-      gz::math::Vector3d vel(0.0, -0.25, 0.0);
+    gz::math::Vector3d force(0, -0.5, 0);
 
-      auto cmdComp =
-          _ecm.Component<gz::sim::components::LinearVelocityCmd>(entity);
+    gz::msgs::Wrench wrenchMsg;
 
-      if (!cmdComp)
-      {
-          _ecm.CreateComponent(
-              entity,
-              gz::sim::components::LinearVelocityCmd(vel));
-      }
-      else
-      {
-          cmdComp->Data() = vel;
-      }
+    wrenchMsg.mutable_force()->set_x(force.X());
+    wrenchMsg.mutable_force()->set_y(force.Y());
+    wrenchMsg.mutable_force()->set_z(0);
+
+    wrenchMsg.mutable_torque()->set_x(0);
+    wrenchMsg.mutable_torque()->set_y(0);
+    wrenchMsg.mutable_torque()->set_z(0);
+
+    auto comp =
+      _ecm.Component<gz::sim::components::ExternalWorldWrenchCmd>(entity);
+
+    if (!comp)
+    {
+      _ecm.CreateComponent(
+        entity,
+        gz::sim::components::ExternalWorldWrenchCmd(wrenchMsg));
+    }
+    else
+    {
+      comp->Data() = wrenchMsg;
+    }
+  }
+
+  void StabilizeMotion(
+    gz::sim::EntityComponentManager &_ecm,
+    gz::sim::Entity entity)
+  {
+    auto velComp =
+      _ecm.Component<gz::sim::components::LinearVelocity>(entity);
+
+    if (!velComp)
+      return;
+
+    auto vel = velComp->Data();
+
+    vel.X() = 0;
+
+    auto cmdComp =
+      _ecm.Component<gz::sim::components::LinearVelocityCmd>(entity);
+
+    if (!cmdComp)
+    {
+      _ecm.CreateComponent(
+        entity,
+        gz::sim::components::LinearVelocityCmd(vel));
+    }
+    else
+    {
+      cmdComp->Data() = vel;
+    }
   }
 };
 
