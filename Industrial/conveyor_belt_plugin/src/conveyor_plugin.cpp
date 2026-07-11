@@ -10,7 +10,8 @@
 #include <gz/plugin/Register.hh>
 #include <gz/math/Vector3.hh>
 #include <gz/msgs/wrench.pb.h>
-#include <unordered_set>
+#include <unordered_map>
+#include <chrono>
 
 namespace box_mover
 {
@@ -21,7 +22,7 @@ class BoxMoverPlugin:
 {
 private:
 
-  std::unordered_set<gz::sim::Entity> initializedObjects;
+  std::unordered_map<gz::sim::Entity, std::chrono::steady_clock::time_point> startTime;
 
 public:
 
@@ -48,10 +49,8 @@ public:
         // Eliminar salchichas que han caído al suelo
         if (pos.Z() < 0.1)
         {
-          initializedObjects.erase(_entity);
-
           _ecm.RequestRemoveEntity(_entity);
-
+          startTime.erase(_entity);
           return true;
         }
 
@@ -65,17 +64,28 @@ public:
 
         for (auto link : links)
         {
-          if (!inside)
-            continue;
-
-          if (initializedObjects.find(_entity) == initializedObjects.end())
+          if (inside)
           {
-            ApplyForce(_ecm, link);
+             if (startTime.find(_entity) == startTime.end())
+            {
+                startTime[_entity] = std::chrono::steady_clock::now();
+            }
 
-            initializedObjects.insert(_entity);
+            auto elapsed =
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::steady_clock::now() - startTime[_entity])
+                .count() / 1000.0;
+
+            if (elapsed < 2.0)
+            {
+                ApplyForce(_ecm, link);
+                StabilizeMotion(_ecm, link);
+            }
+            else
+            {
+                StopMotion(_ecm, link);
+            }
           }
-
-          StabilizeMotion(_ecm, link);
         }
 
         return true;
@@ -86,7 +96,7 @@ public:
     gz::sim::EntityComponentManager &_ecm,
     gz::sim::Entity entity)
   {
-    gz::math::Vector3d force(0, -2.0, 0);
+    gz::math::Vector3d force(0, -0.5, 0);
 
     gz::msgs::Wrench wrenchMsg;
 
@@ -111,6 +121,42 @@ public:
     {
       comp->Data() = wrenchMsg;
     }
+  }
+
+  void StopMotion(
+    gz::sim::EntityComponentManager &_ecm,
+    gz::sim::Entity entity)
+  {
+      gz::math::Vector3d vel(0, 0, 0);
+
+      auto cmdComp =
+          _ecm.Component<gz::sim::components::LinearVelocityCmd>(entity);
+
+      if (!cmdComp)
+      {
+          _ecm.CreateComponent(
+              entity,
+              gz::sim::components::LinearVelocityCmd(vel));
+      }
+      else
+      {
+          cmdComp->Data() = vel;
+      }
+
+      // Eliminar la fuerza
+      auto wrench =
+          _ecm.Component<gz::sim::components::ExternalWorldWrenchCmd>(entity);
+
+      if (wrench)
+      {
+          wrench->Data().mutable_force()->set_x(0);
+          wrench->Data().mutable_force()->set_y(0);
+          wrench->Data().mutable_force()->set_z(0);
+
+          wrench->Data().mutable_torque()->set_x(0);
+          wrench->Data().mutable_torque()->set_y(0);
+          wrench->Data().mutable_torque()->set_z(0);
+      }
   }
 
   void StabilizeMotion(
