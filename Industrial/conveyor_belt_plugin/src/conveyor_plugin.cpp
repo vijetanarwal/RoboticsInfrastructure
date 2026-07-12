@@ -42,6 +42,11 @@ public:
         if (name.find("box_") == std::string::npos)
           return true;
 
+        if (startTime.find(_entity) == startTime.end())
+        {
+            startTime[_entity] = std::chrono::steady_clock::now();
+        }
+
         auto pos = _pose->Data().Pos();
         auto rot = _pose->Data().Rot();
 
@@ -67,11 +72,6 @@ public:
         {
           if (inside)
           {
-             if (startTime.find(_entity) == startTime.end())
-            {
-                startTime[_entity] = std::chrono::steady_clock::now();
-            }
-
             auto elapsed =
                 std::chrono::duration_cast<std::chrono::milliseconds>(
                     std::chrono::steady_clock::now() - startTime[_entity])
