@@ -77,7 +77,7 @@ public:
                     std::chrono::steady_clock::now() - startTime[_entity])
                 .count() / 1000.0;
 
-            if (elapsed < 13.0)
+            if (elapsed < 16.0)
             {
                 SetVelocity(_ecm, link, yaw);
             }
