@@ -76,7 +76,7 @@ public:
                     std::chrono::steady_clock::now() - startTime[_entity])
                 .count() / 1000.0;
 
-            if (elapsed < 16.0)
+            if (elapsed < 2.0)
             {
                 ApplyForce(_ecm, link);
                 StabilizeMotion(_ecm, link);
@@ -96,7 +96,7 @@ public:
     gz::sim::EntityComponentManager &_ecm,
     gz::sim::Entity entity)
   {
-    gz::math::Vector3d force(0, -0.05, 0);
+    gz::math::Vector3d force(0, -0.01, 0);
 
     gz::msgs::Wrench wrenchMsg;
 
