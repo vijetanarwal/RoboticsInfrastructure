@@ -62,7 +62,7 @@ LinkAttacher()
 
 void Configure(
   const Entity &_entity,
-  const std::shared_ptr<const sdf::Element> &,
+  const std::shared_ptr<const sdf::Element> &_sdf,
   EntityComponentManager &,
   EventManager &) override
 {
