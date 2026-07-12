@@ -71,6 +71,11 @@ void Configure(
 
   worldEntity = _entity;
 
+  if (_sdf && _sdf->HasElement("robot_model"))
+  {
+      robotModelName = _sdf->Get<std::string>("robot_model");
+  }
+
   std::cout << "[LinkAttacher] World entity: " << worldEntity << std::endl;
 
   if (!rclcpp::ok())
@@ -156,15 +161,21 @@ void Configure(
 
   std::cout << "[LinkAttacher] Subscribing to contact topics" << std::endl;
 
-  gzNode.Subscribe(
-    "/world/default/model/ur5_robotiq/link/robotiq_85_left_finger_tip_link/sensor/left_finger_contact/contact",
-    &LinkAttacher::OnContact,
-    this);
+  std::string leftTopic =
+      "/world/default/model/" + robotModelName +
+      "/link/robotiq_85_left_finger_tip_link/sensor/left_finger_contact/contact";
 
-  gzNode.Subscribe(
-    "/world/default/model/ur5_robotiq/link/robotiq_85_right_finger_tip_link/sensor/right_finger_contact/contact",
-    &LinkAttacher::OnContact,
-    this);
+  std::string rightTopic =
+      "/world/default/model/" + robotModelName +
+      "/link/robotiq_85_right_finger_tip_link/sensor/right_finger_contact/contact";
+
+  gzNode.Subscribe(leftTopic,
+                  &LinkAttacher::OnContact,
+                  this);
+
+  gzNode.Subscribe(rightTopic,
+                  &LinkAttacher::OnContact,
+                  this);
 
   std::cout << "[LinkAttacher] Starting ROS thread" << std::endl;
 
@@ -375,7 +386,7 @@ void OnContact(const gz::msgs::Contacts &_msg)
       << objectModel
       << std::endl;
 
-    model1 = "ur5_robotiq";
+    model1 = robotModelName;
     if (collision1.find("left_finger") != std::string::npos ||
         collision2.find("left_finger") != std::string::npos)
     {
@@ -551,6 +562,8 @@ bool contactLatched = false;
 bool createJointRequested = false;
 
 gz::transport::Node gzNode;
+
+std::string robotModelName = "ur5_robotiq";
 
 std::string model1;
 std::string link1;
