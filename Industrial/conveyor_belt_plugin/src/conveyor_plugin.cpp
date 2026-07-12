@@ -9,6 +9,7 @@
 #include <gz/math/Vector3.hh>
 #include <unordered_map>
 #include <chrono>
+#include <cmath>
 
 namespace box_mover
 {
@@ -42,6 +43,9 @@ public:
           return true;
 
         auto pos = _pose->Data().Pos();
+        auto rot = _pose->Data().Rot();
+
+        double yaw = rot.Yaw();
 
         // Eliminar salchichas que han caído al suelo
         if (pos.Z() < 0.1)
@@ -75,7 +79,7 @@ public:
 
             if (elapsed < 4.0)
             {
-                SetVelocity(_ecm, link);
+                SetVelocity(_ecm, link, yaw);
             }
             else
             {
@@ -89,10 +93,27 @@ public:
   }
 
   void SetVelocity(
-    gz::sim::EntityComponentManager &_ecm,
-    gz::sim::Entity entity)
+      gz::sim::EntityComponentManager &_ecm,
+      gz::sim::Entity entity,
+      double yaw)
   {
-      gz::math::Vector3d vel(0, -0.25, 0);
+      double vx_world = 0.0;
+      double vy_world = -0.25;
+
+      // Convertir velocidad del mundo al sistema local de la salchicha
+      double vx_local =
+          std::cos(yaw) * vx_world +
+          std::sin(yaw) * vy_world;
+
+      double vy_local =
+        -std::sin(yaw) * vx_world +
+          std::cos(yaw) * vy_world;
+
+      gz::math::Vector3d vel(
+          vx_local,
+          vy_local,
+          0.0
+      );
 
       auto cmdComp =
           _ecm.Component<gz::sim::components::LinearVelocityCmd>(entity);
