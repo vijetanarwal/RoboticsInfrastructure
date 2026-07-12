@@ -56,7 +56,7 @@ class sausageSpawner(Node):
             "-y",
             "0.58",
             "-z",
-            "0.75",
+            "0.78",
             "-R",
             "0",
             "-P",
