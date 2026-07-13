@@ -18,10 +18,6 @@ class BoxMoverPlugin:
   public gz::sim::System,
   public gz::sim::ISystemPreUpdate
 {
-private:
-
-  std::unordered_map<gz::sim::Entity, std::chrono::steady_clock::time_point> startTime;
-
 public:
 
   void PreUpdate(
@@ -42,11 +38,6 @@ public:
         if (name.find("box_") == std::string::npos)
           return true;
 
-        if (startTime.find(_entity) == startTime.end())
-        {
-            startTime[_entity] = std::chrono::steady_clock::now();
-        }
-
         auto pos = _pose->Data().Pos();
         auto rot = _pose->Data().Rot();
 
@@ -56,7 +47,6 @@ public:
         if (pos.Z() < 0.1)
         {
           _ecm.RequestRemoveEntity(_entity);
-          startTime.erase(_entity);
           return true;
         }
 
@@ -72,12 +62,8 @@ public:
         {
           if (inside)
           {
-            auto elapsed =
-                std::chrono::duration_cast<std::chrono::milliseconds>(
-                    std::chrono::steady_clock::now() - startTime[_entity])
-                .count() / 1000.0;
-
-            if (elapsed < 10.5)
+            const double STOP_Y = -0.55;
+            if (pos.Y() > STOP_Y)
             {
                 SetVelocity(_ecm, link, yaw);
             }
