@@ -4,6 +4,7 @@
 #include <gz/sim/components/Link.hh>
 #include <gz/sim/components/Pose.hh>
 #include <gz/sim/components/LinearVelocityCmd.hh>
+#include <gz/sim/components/WorldLinearVelocity.hh>
 
 #include <gz/plugin/Register.hh>
 #include <gz/math/Vector3.hh>
@@ -65,7 +66,7 @@ public:
             const double STOP_Y = -0.55;
             if (pos.Y() > STOP_Y)
             {
-                //SetVelocity(_ecm, link, yaw);
+                SetVelocity(_ecm, link, yaw);
             }
           }
         }
@@ -91,10 +92,21 @@ public:
         -std::sin(yaw) * vx_world +
           std::cos(yaw) * vy_world;
 
+      // Leer la velocidad actual del link
+      double vz = 0.0;
+
+      auto worldVel =
+          _ecm.Component<gz::sim::components::WorldLinearVelocity>(entity);
+
+      if (worldVel)
+      {
+          vz = worldVel->Data().Z();
+      }
+
       gz::math::Vector3d vel(
           vx_local,
           vy_local,
-          0.0
+          vz
       );
 
       auto cmdComp =
