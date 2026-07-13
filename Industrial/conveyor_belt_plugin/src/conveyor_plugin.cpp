@@ -77,7 +77,7 @@ public:
                     std::chrono::steady_clock::now() - startTime[_entity])
                 .count() / 1000.0;
 
-            if (elapsed < 17.8)
+            if (elapsed < 10.0)
             {
                 SetVelocity(_ecm, link, yaw);
             }
@@ -98,7 +98,7 @@ public:
       double yaw)
   {
       double vx_world = 0.0;
-      double vy_world = -0.1;
+      double vy_world = -0.2;
 
       // Convertir velocidad del mundo al sistema local de la salchicha
       double vx_local =
