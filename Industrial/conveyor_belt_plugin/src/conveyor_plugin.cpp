@@ -3,14 +3,13 @@
 #include <gz/sim/components/Model.hh>
 #include <gz/sim/components/Link.hh>
 #include <gz/sim/components/Pose.hh>
+#include <gz/sim/components/ExternalWorldWrenchCmd.hh>
+#include <gz/sim/components/LinearVelocity.hh>
 #include <gz/sim/components/LinearVelocityCmd.hh>
-#include <gz/sim/components/WorldLinearVelocity.hh>
 
 #include <gz/plugin/Register.hh>
 #include <gz/math/Vector3.hh>
-#include <unordered_map>
-#include <chrono>
-#include <cmath>
+#include <gz/msgs/wrench.pb.h>
 
 namespace box_mover
 {
@@ -40,9 +39,6 @@ public:
           return true;
 
         auto pos = _pose->Data().Pos();
-        auto rot = _pose->Data().Rot();
-
-        double yaw = rot.Yaw();
 
         // Eliminar salchichas que han caído al suelo
         if (pos.Z() < 0.1)
@@ -61,13 +57,19 @@ public:
 
         for (auto link : links)
         {
-          if (inside)
+          if (!inside)
+            continue;
+
+          const double STOP_Y = -0.55;
+
+          if (pos.Y() > STOP_Y)
           {
-            const double STOP_Y = -0.55;
-            if (pos.Y() > STOP_Y)
-            {
-                SetVelocity(_ecm, link, yaw);
-            }
+            ApplyForce(_ecm, link);
+            StabilizeMotion(_ecm, link);
+          }
+          else
+          {
+            StopMotion(_ecm, link);
           }
         }
 
@@ -75,60 +77,109 @@ public:
       });
   }
 
-  void SetVelocity(
-      gz::sim::EntityComponentManager &_ecm,
-      gz::sim::Entity entity,
-      double yaw)
+  void ApplyForce(
+    gz::sim::EntityComponentManager &_ecm,
+    gz::sim::Entity entity)
   {
-      double vx_world = 0.0;
-      double vy_world = -0.2;
+    gz::math::Vector3d force(0, -0.5, 0);
 
-      // Convertir velocidad del mundo al sistema local de la salchicha
-      double vx_local =
-          std::cos(yaw) * vx_world +
-          std::sin(yaw) * vy_world;
+    gz::msgs::Wrench wrenchMsg;
 
-      double vy_local =
-        -std::sin(yaw) * vx_world +
-          std::cos(yaw) * vy_world;
+    wrenchMsg.mutable_force()->set_x(force.X());
+    wrenchMsg.mutable_force()->set_y(force.Y());
+    wrenchMsg.mutable_force()->set_z(0);
 
-      // Leer la velocidad actual del link
-      double vz = 0.0;
+    wrenchMsg.mutable_torque()->set_x(0);
+    wrenchMsg.mutable_torque()->set_y(0);
+    wrenchMsg.mutable_torque()->set_z(0);
 
-      auto worldVel =
-          _ecm.Component<gz::sim::components::WorldLinearVelocity>(entity);
+    auto comp =
+      _ecm.Component<gz::sim::components::ExternalWorldWrenchCmd>(entity);
 
-      if (worldVel)
-      {
-          vz = worldVel->Data().Z();
-      }
+    if (!comp)
+    {
+      _ecm.CreateComponent(
+        entity,
+        gz::sim::components::ExternalWorldWrenchCmd(wrenchMsg));
+    }
+    else
+    {
+      comp->Data() = wrenchMsg;
+    }
+  }
 
-      gz::math::Vector3d vel(
-          vx_local,
-          vy_local,
-          vz
-      );
+  void StabilizeMotion(
+    gz::sim::EntityComponentManager &_ecm,
+    gz::sim::Entity entity)
+  {
+    auto velComp =
+      _ecm.Component<gz::sim::components::LinearVelocity>(entity);
 
-      auto cmdComp =
-          _ecm.Component<gz::sim::components::LinearVelocityCmd>(entity);
+    if (!velComp)
+      return;
 
-      if (!cmdComp)
-      {
-          _ecm.CreateComponent(
-              entity,
-              gz::sim::components::LinearVelocityCmd(vel));
-      }
-      else
-      {
-          cmdComp->Data() = vel;
-      }
+    auto vel = velComp->Data();
+
+    vel.X() = 0;
+
+    auto cmdComp =
+      _ecm.Component<gz::sim::components::LinearVelocityCmd>(entity);
+
+    if (!cmdComp)
+    {
+      _ecm.CreateComponent(
+        entity,
+        gz::sim::components::LinearVelocityCmd(vel));
+    }
+    else
+    {
+      cmdComp->Data() = vel;
+    }
   }
 
   void StopMotion(
     gz::sim::EntityComponentManager &_ecm,
     gz::sim::Entity entity)
   {
-      gz::math::Vector3d vel(0, 0, 0);
+      // Eliminar la fuerza
+      gz::msgs::Wrench wrenchMsg;
+
+      wrenchMsg.mutable_force()->set_x(0);
+      wrenchMsg.mutable_force()->set_y(0);
+      wrenchMsg.mutable_force()->set_z(0);
+
+      wrenchMsg.mutable_torque()->set_x(0);
+      wrenchMsg.mutable_torque()->set_y(0);
+      wrenchMsg.mutable_torque()->set_z(0);
+
+      auto wrenchComp =
+          _ecm.Component<gz::sim::components::ExternalWorldWrenchCmd>(entity);
+
+      if (!wrenchComp)
+      {
+          _ecm.CreateComponent(
+              entity,
+              gz::sim::components::ExternalWorldWrenchCmd(wrenchMsg));
+      }
+      else
+      {
+          wrenchComp->Data() = wrenchMsg;
+      }
+
+      // Anular la velocidad residual
+      auto velComp =
+          _ecm.Component<gz::sim::components::LinearVelocity>(entity);
+
+      if (!velComp)
+          return;
+
+      auto vel = velComp->Data();
+
+      // Sólo parar el movimiento horizontal de la cinta
+      vel.X() = 0;
+      vel.Y() = 0;
+
+      // Mantener la velocidad vertical
 
       auto cmdComp =
           _ecm.Component<gz::sim::components::LinearVelocityCmd>(entity);
