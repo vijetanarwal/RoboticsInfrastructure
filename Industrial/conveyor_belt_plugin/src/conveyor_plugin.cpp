@@ -83,6 +83,7 @@ public:
       gz::sim::Entity entity,
       double yaw)
   {
+      std::cout << "[BoxMover] SetVelocity called" << std::endl;
       double vx_world = 0.0;
       double vy_world = -0.2;
 
@@ -134,6 +135,7 @@ public:
       else
       {
           cmdComp->Data() = vel;
+          std::cout << "[BoxMover] StopMotion called" << std::endl;
       }
   }
 };
