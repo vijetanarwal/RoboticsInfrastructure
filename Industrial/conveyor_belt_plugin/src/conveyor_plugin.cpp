@@ -65,7 +65,7 @@ public:
             const double STOP_Y = -0.55;
             if (pos.Y() > STOP_Y)
             {
-                SetVelocity(_ecm, link, yaw);
+                //SetVelocity(_ecm, link, yaw);
             }
           }
         }
