@@ -67,10 +67,6 @@ public:
             {
                 SetVelocity(_ecm, link, yaw);
             }
-            else
-            {
-                StopMotion(_ecm, link);
-            }
           }
         }
 
