@@ -116,12 +116,6 @@ void Configure(
 
       if (!autoAttachEnabled)
       {
-        leftFingerContact = false;
-        rightFingerContact = false;
-
-        leftObject.clear();
-        rightObject.clear();
-
         contactLatched = false;
 
         if (activeJoint != kNullEntity)
@@ -392,61 +386,29 @@ void OnContact(const gz::msgs::Contacts &_msg)
       << objectModel
       << std::endl;
 
-    bool left =
-        collision1.find("left_finger") != std::string::npos ||
-        collision2.find("left_finger") != std::string::npos;
-
-    bool right =
-        collision1.find("right_finger") != std::string::npos ||
-        collision2.find("right_finger") != std::string::npos;
-
-    if (left)
+    model1 = robotModelName;
+    if (collision1.find("left_finger") != std::string::npos ||
+        collision2.find("left_finger") != std::string::npos)
     {
-        leftFingerContact = true;
-        leftObject = objectModel;
-
-        std::cout << "LEFT finger touched " << objectModel << std::endl;
+      link1 = "robotiq_85_left_finger_tip_link";
+    }
+    else
+    {
+      link1 = "robotiq_85_right_finger_tip_link";
     }
 
-    if (right)
-    {
-        rightFingerContact = true;
-        rightObject = objectModel;
+    model2 = objectModel;
 
-        std::cout << "RIGHT finger touched " << objectModel << std::endl;
-    }
+    link2 = "link";
+
+    createJointRequested = true;
+    contactLatched = true;
 
     std::cout
-        << "leftFingerContact=" << leftFingerContact
-        << " rightFingerContact=" << rightFingerContact
-        << std::endl;
+      << "[LinkAttacher] Joint requested"
+      << std::endl;
 
-    if (leftFingerContact &&
-        rightFingerContact &&
-        leftObject == rightObject)
-    {
-        model1 = robotModelName;
-
-        // Puedes usar cualquiera de los dos dedos
-        link1 = "robotiq_85_left_finger_tip_link";
-
-        model2 = leftObject;
-        link2 = "link";
-
-        createJointRequested = true;
-        contactLatched = true;
-
-        leftFingerContact = false;
-        rightFingerContact = false;
-
-        leftObject.clear();
-        rightObject.clear();
-
-        std::cout << "Both fingers touching "
-                  << leftObject
-                  << ". Creating joint."
-                  << std::endl;
-    }
+    break;
   }
 }
 
@@ -578,12 +540,6 @@ void RemoveJoint(EntityComponentManager &_ecm)
   activeJoint = kNullEntity;
 
   contactLatched = false;
-
-  leftFingerContact = false;
-  rightFingerContact = false;
-
-  leftObject.clear();
-  rightObject.clear();
 }
 
 
@@ -604,12 +560,6 @@ bool autoAttachEnabled = false;
 bool removeJointRequested = false;
 bool contactLatched = false;
 bool createJointRequested = false;
-
-bool leftFingerContact = false;
-bool rightFingerContact = false;
-
-std::string leftObject;
-std::string rightObject;
 
 gz::transport::Node gzNode;
 
