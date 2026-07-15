@@ -15,7 +15,7 @@ class sausageSpawner(Node):
         super().__init__("sausage_spawner")
 
         time.sleep(5)
-        #self.timer = self.create_timer(30.0, self.spawn_sausage)
+        self.timer = self.create_timer(30.0, self.spawn_all_sausages)
         self.counter = 0
         self.graspable_pub = self.create_publisher(
             String,
@@ -23,8 +23,6 @@ class sausageSpawner(Node):
             10
         )
         self.publish_graspable_objects()
-
-        self.spawn_all_sausages()
     
     def publish_graspable_objects(self):
 
