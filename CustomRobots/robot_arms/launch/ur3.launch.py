@@ -91,6 +91,15 @@ def launch_setup(context):
         "robot_description_kinematics": kinematics_yaml["/**"]["ros__parameters"]
     }
 
+    servo_yaml = load_yaml(
+        "ur3_gripper_moveit_config",
+        "config/ur_servo.yaml"
+    )
+
+    servo_yaml = {
+        "moveit_servo": servo_yaml
+    }
+
     # =========================
     # CONTROLLERS (MoveIt)
     # =========================
@@ -326,7 +335,21 @@ def launch_setup(context):
         ],
     )
 
+    servo_node = Node(
+        package="moveit_servo",
+        executable="servo_node_main",
+        output="screen",
+        parameters=[
+            robot_description,
+            robot_description_semantic,
+            kinematics_yaml,
+            servo_yaml,
+            {"use_sim_time": True},
+        ],
+    )
+
     nodes.append(move_group)
+    nodes.append(servo_node)
 
     # =========================
     # LAUNCH
