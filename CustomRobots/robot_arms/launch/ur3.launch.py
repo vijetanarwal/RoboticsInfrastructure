@@ -348,8 +348,12 @@ def launch_setup(context):
             moveit_controllers,
             combined_planning,
 
-            servo_yaml,
+            {
+                "moveit_controller_manager":
+                "moveit_simple_controller_manager/MoveItSimpleControllerManager"
+            },
 
+            servo_yaml,
             {"use_sim_time": True},
         ],
     )
