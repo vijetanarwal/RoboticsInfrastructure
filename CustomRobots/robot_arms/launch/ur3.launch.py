@@ -343,7 +343,13 @@ def launch_setup(context):
             robot_description,
             robot_description_semantic,
             kinematics_yaml,
+
+            planning_pipelines_config,
+            moveit_controllers,
+            combined_planning,
+
             servo_yaml,
+
             {"use_sim_time": True},
         ],
     )
