@@ -96,10 +96,6 @@ def launch_setup(context):
         "config/ur_servo.yaml"
     )
 
-    print("===================================")
-    print(servo_yaml)
-    print("===================================")
-
     servo_yaml = {
         "moveit_servo": servo_yaml
     }
@@ -342,23 +338,32 @@ def launch_setup(context):
     servo_node = Node(
         package="moveit_servo",
         executable="servo_node_main",
+        name="servo_node",
         output="screen",
+        arguments=[
+            "--ros-args",
+            "--log-level",
+            "debug",
+        ],
         parameters=[
             robot_description,
             robot_description_semantic,
             kinematics_yaml,
-
-            planning_pipelines_config,
-            moveit_controllers,
             combined_planning,
 
+            # Publicar descripción para PlanningSceneMonitor
             {
-                "moveit_controller_manager":
-                "moveit_simple_controller_manager/MoveItSimpleControllerManager"
+                "publish_robot_description": True,
+                "publish_robot_description_semantic": True,
             },
 
+            # Configuración de Servo
             servo_yaml,
-            {"use_sim_time": True},
+
+            # Configuración temporal
+            {
+                "use_sim_time": True,
+            },
         ],
     )
 
