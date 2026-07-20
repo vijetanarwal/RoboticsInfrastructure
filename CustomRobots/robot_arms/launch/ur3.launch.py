@@ -343,7 +343,7 @@ def launch_setup(context):
         arguments=[
             "--ros-args",
             "--log-level",
-            "debug",
+            "servo_node:=debug",
         ],
         parameters=[
             robot_description,
