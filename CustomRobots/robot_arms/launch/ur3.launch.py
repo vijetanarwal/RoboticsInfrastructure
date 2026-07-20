@@ -96,6 +96,10 @@ def launch_setup(context):
         "config/ur_servo.yaml"
     )
 
+    print("===================================")
+    print(servo_yaml)
+    print("===================================")
+
     servo_yaml = {
         "moveit_servo": servo_yaml
     }
