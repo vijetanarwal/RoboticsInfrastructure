@@ -331,8 +331,14 @@ def launch_setup(context):
             move_group_capabilities,
             moveit_controllers,
             combined_planning,
+
+            {
+                "publish_robot_description": True,
+                "publish_robot_description_semantic": True,
+            },
+
             {"use_sim_time": True},
-        ],
+        ]
     )
 
     servo_node = Node(
@@ -349,22 +355,27 @@ def launch_setup(context):
             robot_description,
             robot_description_semantic,
             kinematics_yaml,
+
+            planning_pipelines_config,
+            moveit_controllers,
             combined_planning,
 
-            # Publicar descripción para PlanningSceneMonitor
+            {
+                "moveit_controller_manager":
+                "moveit_simple_controller_manager/MoveItSimpleControllerManager"
+            },
+
             {
                 "publish_robot_description": True,
                 "publish_robot_description_semantic": True,
             },
 
-            # Configuración de Servo
             servo_yaml,
 
-            # Configuración temporal
             {
                 "use_sim_time": True,
             },
-        ],
+        ]
     )
 
     nodes.append(move_group)

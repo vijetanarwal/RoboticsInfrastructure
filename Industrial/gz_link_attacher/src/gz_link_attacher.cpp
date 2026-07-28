@@ -154,15 +154,6 @@ void Configure(
 
           graspableObjects.push_back(item);
         }
-
-        std::cout
-          << "[LinkAttacher] Updated graspable objects:"
-          << std::endl;
-
-        for (const auto &obj : graspableObjects)
-        {
-          std::cout << "  - " << obj << std::endl;
-        }
       });
 
   std::cout << "[LinkAttacher] Subscribing to contact topics" << std::endl;
