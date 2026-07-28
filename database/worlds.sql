@@ -204,6 +204,7 @@ COPY public.worlds (id, name, scene_id) FROM stdin;
 75	Drone Hangar - Obstacle 2	73
 76	Drone Hangar - Obstacle 3	73
 77	Drone Hangar - Obstacle 4	73
+78	Follow Turtlebot	74
 \.
 
 --
@@ -265,6 +266,8 @@ COPY public.worlds_robots (id, world_id, robot_id, poses) FROM stdin;
 50	75	11	{{0.0,22.0,0.3,0.0,0.0,-1.57}}
 51	76	11	{{0.0,12.0,0.3,0.0,0.0,-1.57}}
 52	77	11	{{0.0,2.0,0.3,0.0,0.0,-1.57}}
+53	78	34	{{4.0,2.5,0.1,0.0,0.0,-1.57}}
+54	78	11	{{0.0,0.0,0.3,0.0,0.0,0.0}}
 \.
 
 --
@@ -307,6 +310,7 @@ COPY public.scenes (id, name, launch_file_path, tools_config, ros_version, type,
 71	Conveyor	/opt/jderobot/Launchers/sausage_exercise.launch.py	{"rviz":"/opt/jderobot/Launchers/rviz/sausage_exercise.launch.py"}	ROS2	gz	sausage_exercise.urdf
 72	Drone Cat Mouse	/opt/jderobot/Launchers/drone_cat_mouse.launch.py	{"gzsim":"/opt/jderobot/Launchers/visualization/drone_cat_mouse.config"}	ROS2	gz	drone_cat_mouse.urdf
 73	Drone Hangar	/opt/jderobot/Launchers/drone_hangar.launch.py	{"gzsim":"/opt/jderobot/Launchers/visualization/drone_hangar.config"}	ROS2	gz	drone_hangar.urdf
+74	Follow Turtlebot	/opt/jderobot/Launchers/follow_turtlebot.launch.py	{"gzsim":"/opt/jderobot/Launchers/visualization/follow_turtlebot.config"}	ROS2	gz	follow_turtlebot.urdf
 \.
 
 --
@@ -348,6 +352,7 @@ COPY public.robots (id, name, launch_file_path, entity, extra_config, model_path
 31	Quadrotor Cat	/home/ws/src/CustomRobots/quadrotor/launch/quadrotor.launch.py	drone	sensor:=camera namespace:=drone color:=Orange	quadrotor/models/quadrotor/quadrotor.urdf.xacro
 32	Quadrotor Mouse	/home/ws/src/CustomRobots/quadrotor/launch/quadrotor.launch.py	drone_mouse	sensor:=camera namespace:=drone_mouse color:=Magenta	quadrotor/models/quadrotor/quadrotor.urdf.xacro
 33	Quadrotor Magnet	/home/ws/src/CustomRobots/quadrotor/launch/quadrotor.launch.py	drone	sensor:=camera namespace:=drone gripper:=true	quadrotor/models/quadrotor/quadrotor.urdf.xacro
+34	Turtlebot 3 Marker	/home/ws/src/CustomRobots/turtlebot3/launch/turtlebot3.launch.py	turtlebot3	sensor:=laser marker:=true namespace:=turtlebot3	turtlebot3/models/turtlebot3/turtlebot3.urdf.xacro
 \.
 
 --
