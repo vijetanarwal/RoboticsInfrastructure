@@ -266,8 +266,7 @@ COPY public.worlds_robots (id, world_id, robot_id, poses) FROM stdin;
 50	75	11	{{0.0,22.0,0.3,0.0,0.0,-1.57}}
 51	76	11	{{0.0,12.0,0.3,0.0,0.0,-1.57}}
 52	77	11	{{0.0,2.0,0.3,0.0,0.0,-1.57}}
-53	78	34	{{4.0,2.5,0.1,0.0,0.0,-1.57}}
-54	78	11	{{0.0,0.0,0.3,0.0,0.0,0.0}}
+53	78	11	{{0.0,0.0,0.3,0.0,0.0,0.0}}
 \.
 
 --
@@ -352,7 +351,6 @@ COPY public.robots (id, name, launch_file_path, entity, extra_config, model_path
 31	Quadrotor Cat	/home/ws/src/CustomRobots/quadrotor/launch/quadrotor.launch.py	drone	sensor:=camera namespace:=drone color:=Orange	quadrotor/models/quadrotor/quadrotor.urdf.xacro
 32	Quadrotor Mouse	/home/ws/src/CustomRobots/quadrotor/launch/quadrotor.launch.py	drone_mouse	sensor:=camera namespace:=drone_mouse color:=Magenta	quadrotor/models/quadrotor/quadrotor.urdf.xacro
 33	Quadrotor Magnet	/home/ws/src/CustomRobots/quadrotor/launch/quadrotor.launch.py	drone	sensor:=camera namespace:=drone gripper:=true	quadrotor/models/quadrotor/quadrotor.urdf.xacro
-34	Turtlebot 3 Marker	/home/ws/src/CustomRobots/turtlebot3/launch/turtlebot3.launch.py	turtlebot3	sensor:=laser marker:=true namespace:=turtlebot3	turtlebot3/models/turtlebot3/turtlebot3.urdf.xacro
 \.
 
 --
