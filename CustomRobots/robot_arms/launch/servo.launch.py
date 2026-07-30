@@ -3,8 +3,13 @@ import yaml
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
-from moveit_configs_utils import MoveItConfigsBuilder
+import xacro
 
+def load_file(package_name, file_path):
+    package_path = get_package_share_directory(package_name)
+
+    with open(os.path.join(package_path, file_path), "r") as f:
+        return f.read()
 
 def load_yaml(package_name, file_path):
     package_path = get_package_share_directory(package_name)
@@ -18,12 +23,58 @@ def load_yaml(package_name, file_path):
 
 
 def generate_launch_description():
-    moveit_config = (
-        MoveItConfigsBuilder(
-            "ur3",
-            package_name="ur3_gripper_moveit_config",
-        ).to_moveit_configs()
+    package_dir = get_package_share_directory("custom_robots")
+
+    xacro_file = os.path.join(
+        package_dir,
+        "models",
+        "ur3",
+        "ur3.urdf.xacro",
     )
+
+    controllers_file = os.path.join(
+        package_dir,
+        "config",
+        "ur3_controllers.yaml",
+    )
+
+    robot_description_content = xacro.process_file(
+        xacro_file,
+        mappings={
+            "ur_type": "ur3",
+            "name": "ur",
+            "prefix": "",
+            "use_fake_hardware": "false",
+            "sim_gazebo": "false",
+            "sim_gz": "true",
+            "simulation_controllers": controllers_file,
+            "hmi": "false",
+            "EE": "true",
+            "EE_name": "robotiq_2f85",
+            "camera": "false",
+        },
+    ).toxml()
+
+    robot_description = {
+        "robot_description": robot_description_content
+    }
+
+    robot_description_semantic = {
+        "robot_description_semantic": load_file(
+            "ros2srrc_ur3_moveit2",
+            "config/ur3robotiq_2f85.srdf",
+        )
+    }
+
+    kinematics_yaml = load_yaml(
+        "ur3_gripper_moveit_config",
+        "config/kinematics.yaml",
+    )
+
+    kinematics_yaml = {
+        "robot_description_kinematics":
+            kinematics_yaml["/**"]["ros__parameters"]
+    }
 
     # Get parameters for the Servo node
     servo_yaml = load_yaml(
@@ -59,9 +110,9 @@ def generate_launch_description():
         executable="servo_node_main",
         parameters=[
             servo_params,
-            moveit_config.robot_description,
-            moveit_config.robot_description_semantic,
-            moveit_config.robot_description_kinematics,
+            robot_description,
+            robot_description_semantic,
+            kinematics_yaml,
             combined_planning,
             {"use_sim_time": True},
         ],
