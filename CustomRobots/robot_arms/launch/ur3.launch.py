@@ -355,23 +355,7 @@ def launch_setup(context):
             robot_description,
             robot_description_semantic,
             kinematics_yaml,
-
-            planning_pipelines_config,
-            moveit_controllers,
-            combined_planning,
-
-            {
-                "moveit_controller_manager":
-                "moveit_simple_controller_manager/MoveItSimpleControllerManager"
-            },
-
-            {
-                "publish_robot_description": True,
-                "publish_robot_description_semantic": True,
-            },
-
             servo_yaml,
-
             {
                 "use_sim_time": True,
             },
