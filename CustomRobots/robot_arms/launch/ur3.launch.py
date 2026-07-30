@@ -91,22 +91,6 @@ def launch_setup(context):
         "robot_description_kinematics": kinematics_yaml["/**"]["ros__parameters"]
     }
 
-    servo_yaml = load_yaml(
-        "ur3_gripper_moveit_config",
-        "config/ur_servo.yaml"
-    )
-
-    servo_yaml = {
-        "moveit_servo": servo_yaml
-    }
-
-    planning_scene_monitor_parameters = {
-        "publish_planning_scene": True,
-        "publish_geometry_updates": True,
-        "publish_state_updates": True,
-        "publish_transforms_updates": True,
-    }
-
     # =========================
     # CONTROLLERS (MoveIt)
     # =========================
@@ -348,42 +332,7 @@ def launch_setup(context):
         ]
     )
 
-    servo_node = Node(
-        package="moveit_servo",
-        executable="servo_node_main",
-        name="servo_node",
-        output="screen",
-        arguments=[
-            "--ros-args",
-            "--log-level",
-            "servo_node:=debug",
-        ],
-        parameters=[
-            robot_description,
-            robot_description_semantic,
-            kinematics_yaml,
-
-            planning_pipelines_config,
-            moveit_controllers,
-            combined_planning,
-            {
-                "moveit_controller_manager":
-                "moveit_simple_controller_manager/MoveItSimpleControllerManager"
-            },
-            {
-                "publish_robot_description": True,
-                "publish_robot_description_semantic": True,
-            },
-            planning_scene_monitor_parameters,
-            servo_yaml,
-            {
-                "use_sim_time": True,
-            },
-        ]
-    )
-
     nodes.append(move_group)
-    nodes.append(servo_node)
 
     # =========================
     # LAUNCH
