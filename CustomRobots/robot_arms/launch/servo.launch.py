@@ -4,6 +4,7 @@ from launch import LaunchDescription
 from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
 import xacro
+from launch.actions import TimerAction, ExecuteProcess
 
 def load_file(package_name, file_path):
     package_path = get_package_share_directory(package_name)
@@ -119,8 +120,22 @@ def generate_launch_description():
         output="screen",
     )
 
-    return LaunchDescription(
-        [
-            servo_node,
-        ]
-    )
+    return LaunchDescription([
+        servo_node,
+
+        TimerAction(
+            period=2.0,
+            actions=[
+                ExecuteProcess(
+                    cmd=[
+                        "ros2",
+                        "service",
+                        "call",
+                        "/servo_node/start_servo",
+                        "std_srvs/srv/Trigger",
+                    ],
+                    output="screen",
+                )
+            ],
+        ),
+    ])
