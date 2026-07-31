@@ -4,6 +4,7 @@ import rclpy
 from rclpy.node import Node
 
 from geometry_msgs.msg import TwistStamped
+from trajectory_msgs.msg import JointTrajectory
 
 
 class ServoDebug(Node):
@@ -15,7 +16,11 @@ class ServoDebug(Node):
         self.get_logger().info("Servo Debug iniciado")
 
         self.twist_count = 0
+        self.traj_count = 0
 
+        # ==========================
+        # Subscriber Twist
+        # ==========================
         self.create_subscription(
             TwistStamped,
             "/servo_node/delta_twist_cmds",
@@ -23,11 +28,20 @@ class ServoDebug(Node):
             10,
         )
 
+        # ==========================
+        # Subscriber Trayectoria
+        # ==========================
+        self.create_subscription(
+            JointTrajectory,
+            "/joint_trajectory_controller/joint_trajectory",
+            self.traj_callback,
+            10,
+        )
+
     def twist_callback(self, msg):
 
         self.twist_count += 1
 
-        # Imprime los primeros 5 mensajes y luego uno cada 20
         if self.twist_count <= 5 or self.twist_count % 20 == 0:
 
             print("\n========== TWIST RECEIVED ==========")
@@ -54,6 +68,40 @@ class ServoDebug(Node):
             )
 
             print("====================================")
+
+    def traj_callback(self, msg):
+
+        self.traj_count += 1
+
+        if self.traj_count <= 5 or self.traj_count % 20 == 0:
+
+            print("\n========== TRAJECTORY ==========")
+            print(f"Trajectory : {self.traj_count}")
+
+            if len(msg.points) == 0:
+                print("No trajectory points.")
+                print("===============================")
+                return
+
+            point = msg.points[0]
+
+            print("Joint positions:")
+
+            for joint, pos in zip(msg.joint_names, point.positions):
+                print(f"  {joint:25s}: {pos:+.6f}")
+
+            if len(point.velocities):
+
+                print("\nJoint velocities:")
+
+                for joint, vel in zip(msg.joint_names, point.velocities):
+                    print(f"  {joint:25s}: {vel:+.6f}")
+
+            else:
+
+                print("\nJoint velocities: EMPTY")
+
+            print("===============================")
 
 
 def main():
