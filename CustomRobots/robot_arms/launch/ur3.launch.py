@@ -12,7 +12,7 @@ import os
 import xacro
 import yaml
 from ament_index_python.packages import get_package_share_directory
-from launch.actions import DeclareLaunchArgument, OpaqueFunction, TimerAction, ExecuteProcess
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
 
 
 def load_file(package_name, file_path):
@@ -89,19 +89,6 @@ def launch_setup(context):
 
     kinematics_yaml = {
         "robot_description_kinematics": kinematics_yaml["/**"]["ros__parameters"]
-    }
-
-    # =========================
-    # SERVO PARAMETERS
-    # =========================
-
-    servo_yaml = load_yaml(
-        "ur3_gripper_moveit_config",
-        "config/ur_servo.yaml",
-    )
-
-    servo_params = {
-        "moveit_servo": servo_yaml
     }
 
     # =========================
@@ -345,39 +332,7 @@ def launch_setup(context):
         ]
     )
 
-    servo_node = Node(
-        package="moveit_servo",
-        executable="servo_node_main",
-        output="screen",
-        parameters=[
-            servo_params,
-            robot_description,
-            robot_description_semantic,
-            kinematics_yaml,
-            combined_planning,
-            {"use_sim_time": True},
-        ],
-    )
-
     nodes.append(move_group)
-    nodes.append(servo_node)
-    nodes.append(
-            TimerAction(
-                period=2.0,
-                actions=[
-                    ExecuteProcess(
-                        cmd=[
-                            "ros2",
-                            "service",
-                            "call",
-                            "/servo_node/start_servo",
-                            "std_srvs/srv/Trigger",
-                        ],
-                        output="screen",
-                    )
-                ],
-            )
-        )
 
     # =========================
     # LAUNCH
