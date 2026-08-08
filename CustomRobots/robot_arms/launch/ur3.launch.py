@@ -326,6 +326,10 @@ def launch_setup(context):
             {
                 "publish_robot_description": True,
                 "publish_robot_description_semantic": True,
+                "planning_scene_monitor.publish_planning_scene": True,
+                "planning_scene_monitor.publish_geometry_updates": True,
+                "planning_scene_monitor.publish_state_updates": True,
+                "planning_scene_monitor.publish_transforms_updates": True,
             },
 
             {"use_sim_time": True},
