@@ -63,7 +63,7 @@ CREATE TABLE public.worlds_robots (
     id bigint NOT NULL,
     world_id bigint NOT NULL,
     robot_id bigint NOT NULL,
-    instances SMALLINT NOT NULL
+    poses real[] [6] NOT NULL
 );
 
 ALTER TABLE public.worlds_robots OWNER TO "user-dev";
@@ -91,12 +91,8 @@ CREATE TABLE public.scenes (
     tools_config character varying(200) NOT NULL,
     ros_version character varying(4) NOT NULL,
     type character varying(50) NOT NULL,
-    start_pose real[] [6] NOT NULL
+    model_path character varying(200) NOT NULL
 );
-
---
--- start_pose is '{X,Y,Z,Roll,Pitch,Yaw}'
---
 
 ALTER TABLE public.scenes OWNER TO "user-dev";
 
@@ -121,7 +117,8 @@ CREATE TABLE public.robots (
     name character varying(100) NOT NULL,
     launch_file_path character varying(200) NOT NULL,
     entity character varying(32) NOT NULL,
-    extra_config character varying(256) NOT NULL
+    extra_config character varying(256) NOT NULL,
+    model_path character varying(200) NOT NULL
 );
 
 ALTER TABLE public.robots OWNER TO "user-dev";
@@ -201,7 +198,15 @@ COPY public.worlds (id, name, scene_id) FROM stdin;
 69	Rover 4wd Warehouse High Noise	68
 70	Machine vision world	70
 71	Conveyor Belt World	71
-72	Drone Cat Mouse	72
+72	Drone Cat Mouse Easy	72
+73	Drone Hangar	73
+74	Drone Hangar - Obstacle 1	73
+75	Drone Hangar - Obstacle 2	73
+76	Drone Hangar - Obstacle 3	73
+77	Drone Hangar - Obstacle 4	73
+78	Position Control	74
+79	Drone Cat Mouse Medium	75
+80	Drone Cat Mouse Hard	76
 \.
 
 --
@@ -209,60 +214,70 @@ COPY public.worlds (id, name, scene_id) FROM stdin;
 --
 
 
-COPY public.worlds_robots (id, world_id, robot_id, instances) FROM stdin; 
-0	1	9	1
-1	5	2	1
-2	6	2	1
-3	11 	18	1
-4	12 	16	1
-5	20 	2	1
-6	21 	2	1
-7	22 	4	1
-8	23 	4	1
-9	24 	4	1
-10	25 	4	1
-11	27	10	1
-12	29	21	1
-13	30	28	1
-14	31	11	1
-15	32	11	1
-16	33	28	1
-17	35	6	1
-18	36	11	1
-19	37	11	1
-20	39	11	1
-21	40	3	1
-22	41	8	1
-23	42	8	1
-24	43	8	1
-25	44	7	1
-26	47	2	1
-27	48 	4	1
-28	49 	2	1
-29	55 	12	1
-30	56	1	1
-31	57 	11	1
-32	58	13	1
-33	59	13	1
-34	60	14	1
-35	61	14	1
-36	62	29	1
-37	63	30	1
-38	64	29	1
-39	65	30	1
-40	66	15	1
-41	67	15	1
-42	68	19	1
-43	69	20	1
-44	70	24	1
-45	71	26	1
-46	72	11	2
+COPY public.worlds_robots (id, world_id, robot_id, poses) FROM stdin; 
+0	1	9	{{-1,1.5,0,0.0,0.0,0.0}}
+1	5	2	{{53.462,-10.734,0.004,0,0,-1.57}}
+2	6	2	{{-200.88, -90.72, 0.0, 0.0, 0.0, -2.83}}
+3	11 	18	{{0,0,0.1,0,0,-1.5529944}}
+4	12 	16	{{0.0,0.0,0.0,0.0,0.0,0.0}}
+5	20 	2	{{27.18, -31.55, 0.0, 0.0, 0.01, -3.12}}
+6	21 	2	{{-74.29, 37.74, 0.0, 0.0, 0.0, -0.51}}
+7	22 	4	{{-74.29, 37.74, 0.0, 0.0, 0.0, -0.51}}
+8	23 	4	{{27.18, -31.55, 0.0, 0.0, 0.01, -3.12}}
+9	24 	4	{{-200.88, -90.72, 0.0, 0.0, 0.0, -2.83}}
+10	25 	4	{{53.462,-10.734,0.004,0,0,-1.57}}
+11	27	10	{{-1,1.5,0.0,0.0,0.0,0.0}}
+12	29	21	{{1,-1.5,0.43,0,0,0}}
+13	30	28	{{0.0,0.0,0.0,0.0,0.0,0.0}}
+14	31	11	{{0.0,0.0,1.45,0.0,0.0,0.0}}
+15	32	11	{{17.96,0.0,0.3,0,0,-2.0}}
+16	33	28	{{14.25,-10.75,0.1,0,-0,3.14}}
+17	35	6	{{2.5,-30,0.1,0,0,1.57}}
+18	36	11	{{0.0,0.0,1.05,0.0,0.0,0.0}}
+19	37	11	{{-21.0,-4.0,0.15,0,0,0}}
+20	39	11	{{-18,-8.5,0.3,0,0,0}}
+21	40	3	{{0.04,0.68,0,0,0,-1.57}}
+22	41	8	{{-7,2.5,0.004,0.0,0.0,0}}
+23	42	8	{{-7,2.5,0.004,0.0,0.0,0}}
+24	43	8	{{-7,2.5,0.004,0.0,0.0,0}}
+25	44	7	{{-7,2.5,0.004,0.0,0.0,0}}
+26	47	2	{{146,60,-593.20,0,0,0.35}}
+27	48 	4	{{-105.223, -70.77, -1.8, 0.0, 0.0, 1.69}}
+28	49 	2	{{-105.223, -70.77, -1.8, 0.0, 0.0, 1.69}}
+29	55 	12	{{0.0,0.0,0.15,0.0,0.0,0.0}}
+30	56	1	{{0.0,0.0,0.9,0.0,0.0,0.0}}
+31	57 	33	{{-1.0,-4.0,0.3,0,0,1.5729}}
+32	58	13	{{0.0,0.0,0.1,0.0,0.0,0.0}}
+33	59	13	{{0.0,0.0,0.1,0.0,0.0,0.0}}
+34	60	14	{{0.0,0.0,0.1,0.0,0.0,0.0}}
+35	61	14	{{0.0,0.0,0.1,0.0,0.0,0.0}}
+36	62	29	{{14.25,-10.75,0.1,0,-0,3.14}}
+37	63	30	{{14.25,-10.75,0.1,0,-0,3.14}}
+38	64	29	{{0.0,0.0,0.0,0.0,0.0,0.0}}
+39	65	30	{{0.0,0.0,0.0,0.0,0.0,0.0}}
+40	66	15	{{-1.0,10.0,0.1,0.0,0.0,0.0}}
+41	67	15	{{-1.0,10.0,0.1,0.0,0.0,0.0}}
+42	68	19	{{0.0,0.0,0.0,0.0,0.0,0.0}}
+43	69	20	{{0.0,0.0,0.0,0.0,0.0,0.0}}
+44	70	24	{{0.0,0.0,0.9,0.0,0.0,0.0}}
+45	71	26	{{-0.4,-0.5,0.8,0.0,0.0,0.0}}
+46	72	11	{{0,5,0,0.0,0.0,0.0}}
+47	72	32	{{8,5,0,0.0,0.0,0.0}}
+48	73	11	{{0.0,44.0,0.3,0.0,0.0,-1.57}}
+49	74	11	{{0.0,32.0,0.3,0.0,0.0,-1.57}}
+50	75	11	{{0.0,22.0,0.3,0.0,0.0,-1.57}}
+51	76	11	{{0.0,12.0,0.3,0.0,0.0,-1.57}}
+52	77	11	{{0.0,2.0,0.3,0.0,0.0,-1.57}}
+53	78	11	{{0.0,0.0,0.3,0.0,0.0,0.0}}
+54	79	11	{{0,5,0,0.0,0.0,0.0}}
+55	79	32	{{8,5,0,0.0,0.0,0.0}}
+56	80	11	{{0,5,0,0.0,0.0,0.0}}
+57	80	32	{{8,5,0,0.0,0.0,0.0}}
 \.
 
 --
 -- Data for Name: scenes; Type: TABLE DATA; Schema: public; Owner: user-dev
 --
-
 
 COPY public.scenes (id, name, launch_file_path, tools_config, ros_version, type, start_pose) FROM stdin;
 9	City Large	/opt/jderobot/Launchers/basic_city.launch.py	{"gzsim":"/opt/jderobot/Launchers/visualization/basic_city.config"}	ROS2	gz	{{0,0,0.1,0,0,-1.5529944}}
@@ -300,43 +315,44 @@ COPY public.scenes (id, name, launch_file_path, tools_config, ros_version, type,
 71	Conveyor	/opt/jderobot/Launchers/sausage_exercise.launch.py	{"rviz":"/opt/jderobot/Launchers/rviz/sausage_exercise.launch.py"}	ROS2	gz	{{0.0,-0.85,0.8,0.0,0.0,0.0}}
 72	Drone Cat Mouse	/opt/jderobot/Launchers/drone_cat_mouse.launch.py	{"gzsim":"/opt/jderobot/Launchers/visualization/drone_cat_mouse.config"}	ROS2	gz	{{0,5,0.2,0.0,0.0,0.0},{20,5,0.2,0.0,0.0,0.0}}
 \.
-
 --
 -- Data for Name: robots; Type: TABLE DATA; Schema: public; Owner: user-dev
 --
 
 
-COPY public.robots (id, name, launch_file_path, entity, extra_config) FROM stdin;
-1	Ur5	/home/ws/src/CustomRobots/robot_arms/launch/ur5.launch.py	ur5_robotiq	None
-2	F1 Holonomic Camera	/home/ws/src/CustomRobots/f1/launch/f1.launch.py	f1	mode:=holo sensor:=camera namespace:=f1
-3	F1 Holonomic Laser	/home/ws/src/CustomRobots/f1/launch/f1.launch.py	f1	mode:=holo sensor:=laser namespace:=f1
-4	F1 Ackermann Camera	/home/ws/src/CustomRobots/f1/launch/f1.launch.py	f1	mode:=ackermann sensor:=camera namespace:=f1
-5	F1 Ackermann Laser	/home/ws/src/CustomRobots/f1/launch/f1.launch.py	f1	mode:=ackermann sensor:=laser namespace:=f1
-6	Autonomous car Camera	/home/ws/src/CustomRobots/autonomous_car/launch/autonomous_car.launch.py	autonomous_car	sensor:=camera namespace:=autonomous_car 
-7	Autonomous car Lidar	/home/ws/src/CustomRobots/autonomous_car/launch/autonomous_car.launch.py	autonomous_car	sensor:=lidar namespace:=autonomous_car 
-8	Autonomous car 3 Lasers	/home/ws/src/CustomRobots/autonomous_car/launch/autonomous_car.launch.py	autonomous_car	sensor:=laser namespace:=autonomous_car 
-9	Vacuum cleaner Laser	/home/ws/src/CustomRobots/vacuum_cleaner/launch/vacuum_cleaner.launch.py	vacuum_cleaner	sensor:=laser namespace:=vacuum_cleaner 
-10	Vacuum cleaner Camera	/home/ws/src/CustomRobots/vacuum_cleaner/launch/vacuum_cleaner.launch.py	vacuum_cleaner	sensor:=camera namespace:=vacuum_cleaner 
-11	Quadrotor	/home/ws/src/CustomRobots/quadrotor/launch/quadrotor.launch.py	drone	sensor:=camera namespace:=drone
-12	Rover 4wd	/home/ws/src/CustomRobots/rover_4wd/launch/rover_4wd.launch.py	rover_4wd	namespace:=rover_4wd
-13	Holonomic Logistic	/home/ws/src/CustomRobots/logistic_holonomic_robot/launch/logistic_holonomic_robot.launch.py	logistic_holonomic_robot	namespace:=logistic_robot
-14	Ackermann Logistic	/home/ws/src/CustomRobots/logistic_ackermann_robot/launch/logistic_ackermann_robot.launch.py	logistic_ackermann_robot	namespace:=logistic_robot
-15	TurtleBot 2	/home/ws/src/CustomRobots/Turtlebot2/launch/turtlebot2.launch.py	turtlebot2	sensor:=camera namespace:=turtlebot2
-16	TurtleBot 2 Stereo	/home/ws/src/CustomRobots/Turtlebot2/launch/turtlebot2.launch.py	turtlebot2	sensor:=stereo namespace:=turtlebot2
-17	Turtlebot 3	/home/ws/src/CustomRobots/turtlebot3/launch/turtlebot3.launch.py	turtlebot3	namespace:=turtlebot3
-18	Autonomous holonomic car	/home/ws/src/CustomRobots/autonomous_car/launch/autonomous_car.launch.py	autonomous_car	mode:=holonomic namespace:=autonomous_car
-19	Rover 4wd Low Noise	/home/ws/src/CustomRobots/rover_4wd/launch/rover_4wd.launch.py	rover_4wd	noise:=low namespace:=rover_4wd
-20	Rover 4wd High Noise	/home/ws/src/CustomRobots/rover_4wd/launch/rover_4wd.launch.py	rover_4wd	noise:=high namespace:=rover_4wd
-21	Turtlebot 3 Low Noise	/home/ws/src/CustomRobots/turtlebot3/launch/turtlebot3.launch.py	turtlebot3	noise:=low namespace:=turtlebot3
-22	Turtlebot 3 Medium Noise	/home/ws/src/CustomRobots/turtlebot3/launch/turtlebot3.launch.py	turtlebot3	noise:=med namespace:=turtlebot3
-23	Turtlebot 3 High Noise	/home/ws/src/CustomRobots/turtlebot3/launch/turtlebot3.launch.py	turtlebot3	noise:=high namespace:=turtlebot3
-24	Ur5 Camera	/home/ws/src/CustomRobots/robot_arms/launch/ur5.launch.py	ur5_robotiq	sensor:=camera
-25	Ur3	/home/ws/src/CustomRobots/robot_arms/launch/ur3.launch.py	ur3_robotiq	None
-26	Ur3 Camera	/home/ws/src/CustomRobots/robot_arms/launch/ur3.launch.py	ur3_robotiq	sensor:=camera
-27	Dingo	/home/ws/src/CustomRobots/dingo/launch/dingo.launch.py	do150	namespace:=do150
-28	Dingo Low Noise	/home/ws/src/CustomRobots/dingo/launch/dingo.launch.py	do150	noise:=low namespace:=do150
-29	Dingo Medium Noise	/home/ws/src/CustomRobots/dingo/launch/dingo.launch.py	do150	noise:=med namespace:=do150
-30	Dingo High Noise	/home/ws/src/CustomRobots/dingo/launch/dingo.launch.py	do150	noise:=high namespace:=do150
+COPY public.robots (id, name, launch_file_path, entity, extra_config, model_path) FROM stdin;
+1	Ur5	/home/ws/src/CustomRobots/robot_arms/launch/ur5.launch.py	ur5_robotiq	None	robot_arms/models/ur5/ur5.urdf.xacro
+2	F1 Holonomic Camera	/home/ws/src/CustomRobots/f1/launch/f1.launch.py	f1	mode:=holo sensor:=camera namespace:=f1	f1/models/f1/f1.urdf.xacro
+3	F1 Holonomic Laser	/home/ws/src/CustomRobots/f1/launch/f1.launch.py	f1	mode:=holo sensor:=laser namespace:=f1	f1/models/f1/f1.urdf.xacro
+4	F1 Ackermann Camera	/home/ws/src/CustomRobots/f1/launch/f1.launch.py	f1	mode:=ackermann sensor:=camera namespace:=f1	f1/models/f1/f1.urdf.xacro
+5	F1 Ackermann Laser	/home/ws/src/CustomRobots/f1/launch/f1.launch.py	f1	mode:=ackermann sensor:=laser namespace:=f1	f1/models/f1/f1.urdf.xacro
+6	Autonomous car Camera	/home/ws/src/CustomRobots/autonomous_car/launch/autonomous_car.launch.py	autonomous_car	sensor:=camera namespace:=autonomous_car 	autonomous_car/models/autonomous_car/autonomous_car.urdf.xacro
+7	Autonomous car Lidar	/home/ws/src/CustomRobots/autonomous_car/launch/autonomous_car.launch.py	autonomous_car	sensor:=lidar namespace:=autonomous_car 	autonomous_car/models/autonomous_car/autonomous_car.urdf.xacro
+8	Autonomous car 3 Lasers	/home/ws/src/CustomRobots/autonomous_car/launch/autonomous_car.launch.py	autonomous_car	sensor:=laser namespace:=autonomous_car 	autonomous_car/models/autonomous_car/autonomous_car.urdf.xacro
+9	Vacuum cleaner Laser	/home/ws/src/CustomRobots/vacuum_cleaner/launch/vacuum_cleaner.launch.py	vacuum_cleaner	sensor:=laser namespace:=vacuum_cleaner 	vacuum_cleaner/models/vacuum_cleaner/vacuum_cleaner.urdf.xacro
+10	Vacuum cleaner Camera	/home/ws/src/CustomRobots/vacuum_cleaner/launch/vacuum_cleaner.launch.py	vacuum_cleaner	sensor:=camera namespace:=vacuum_cleaner 	vacuum_cleaner/models/vacuum_cleaner/vacuum_cleaner.urdf.xacro
+11	Quadrotor	/home/ws/src/CustomRobots/quadrotor/launch/quadrotor.launch.py	drone	sensor:=camera namespace:=drone	quadrotor/models/quadrotor/quadrotor.urdf.xacro
+12	Rover 4wd	/home/ws/src/CustomRobots/rover_4wd/launch/rover_4wd.launch.py	rover_4wd	namespace:=rover_4wd	rover_4wd/model/rover_4wd/rover_4wd.urdf.xacro
+13	Holonomic Logistic	/home/ws/src/CustomRobots/logistic_holonomic_robot/launch/logistic_holonomic_robot.launch.py	logistic_holonomic_robot	namespace:=logistic_robot	logistic_holonomic_robot/models/logistic_holonomic_robot/logistic_holonomic_robot.urdf.xacro
+14	Ackermann Logistic	/home/ws/src/CustomRobots/logistic_ackermann_robot/launch/logistic_ackermann_robot.launch.py	logistic_ackermann_robot	namespace:=logistic_robot	logistic_ackermann_robot/models/logistic_ackermann_robot/logistic_ackermann_robot.urdf.xacro
+15	TurtleBot 2	/home/ws/src/CustomRobots/Turtlebot2/launch/turtlebot2.launch.py	turtlebot2	sensor:=camera namespace:=turtlebot2	Turtlebot2/model/turtlebot2/turtlebot2.urdf.xacro
+16	TurtleBot 2 Stereo	/home/ws/src/CustomRobots/Turtlebot2/launch/turtlebot2.launch.py	turtlebot2	sensor:=stereo namespace:=turtlebot2	Turtlebot2/model/turtlebot2/turtlebot2.urdf.xacro
+17	Turtlebot 3	/home/ws/src/CustomRobots/turtlebot3/launch/turtlebot3.launch.py	turtlebot3	namespace:=turtlebot3	turtlebot3/models/turtlebot3/turtlebot3.urdf.xacro
+18	Autonomous holonomic car	/home/ws/src/CustomRobots/autonomous_car/launch/autonomous_car.launch.py	autonomous_car	mode:=holonomic namespace:=autonomous_car	autonomous_car/models/autonomous_car/autonomous_car.urdf.xacro
+19	Rover 4wd Low Noise	/home/ws/src/CustomRobots/rover_4wd/launch/rover_4wd.launch.py	rover_4wd	noise:=low namespace:=rover_4wd	rover_4wd/model/rover_4wd/rover_4wd.urdf.xacro
+20	Rover 4wd High Noise	/home/ws/src/CustomRobots/rover_4wd/launch/rover_4wd.launch.py	rover_4wd	noise:=high namespace:=rover_4wd	rover_4wd/model/rover_4wd/rover_4wd.urdf.xacro
+21	Turtlebot 3 Low Noise	/home/ws/src/CustomRobots/turtlebot3/launch/turtlebot3.launch.py	turtlebot3	noise:=low namespace:=turtlebot3	turtlebot3/models/turtlebot3/turtlebot3.urdf.xacro
+22	Turtlebot 3 Medium Noise	/home/ws/src/CustomRobots/turtlebot3/launch/turtlebot3.launch.py	turtlebot3	noise:=med namespace:=turtlebot3	turtlebot3/models/turtlebot3/turtlebot3.urdf.xacro
+23	Turtlebot 3 High Noise	/home/ws/src/CustomRobots/turtlebot3/launch/turtlebot3.launch.py	turtlebot3	noise:=high namespace:=turtlebot3	turtlebot3/models/turtlebot3/turtlebot3.urdf.xacro
+24	Ur5 Camera	/home/ws/src/CustomRobots/robot_arms/launch/ur5.launch.py	ur5_robotiq	sensor:=camera	robot_arms/models/ur5/ur5.urdf.xacro
+25	Ur3	/home/ws/src/CustomRobots/robot_arms/launch/ur3.launch.py	ur3_robotiq	None	robot_arms/models/ur3/ur3.urdf.xacro
+26	Ur3 Camera	/home/ws/src/CustomRobots/robot_arms/launch/ur3.launch.py	ur3_robotiq	sensor:=camera	robot_arms/models/ur3/ur3.urdf.xacro
+27	Dingo	/home/ws/src/CustomRobots/dingo/launch/dingo.launch.py	do150	namespace:=do150	dingo/model/dingo/dingo.urdf.xacro
+28	Dingo Low Noise	/home/ws/src/CustomRobots/dingo/launch/dingo.launch.py	do150	noise:=low namespace:=do150	dingo/model/dingo/dingo.urdf.xacro
+29	Dingo Medium Noise	/home/ws/src/CustomRobots/dingo/launch/dingo.launch.py	do150	noise:=med namespace:=do150	dingo/model/dingo/dingo.urdf.xacro
+30	Dingo High Noise	/home/ws/src/CustomRobots/dingo/launch/dingo.launch.py	do150	noise:=high namespace:=do150	dingo/model/dingo/dingo.urdf.xacro
+32	Quadrotor Mouse	/home/ws/src/CustomRobots/quadrotor/launch/quadrotor.launch.py	drone_mouse	sensor:=camera namespace:=drone_mouse color:=Magenta	quadrotor/models/quadrotor/quadrotor.urdf.xacro
+33	Quadrotor Magnet	/home/ws/src/CustomRobots/quadrotor/launch/quadrotor.launch.py	drone	sensor:=camera namespace:=drone gripper:=true	quadrotor/models/quadrotor/quadrotor.urdf.xacro
 \.
 
 --
@@ -410,8 +426,8 @@ CREATE INDEX exercises_world_name_459df99a_like ON public.worlds USING btree (na
 -- Name: worlds_robots worlds_robots_world_id_robot_id_155bee4e_uniq; Type: CONSTRAINT; Schema: public; Owner: user-dev
 --
 
-ALTER TABLE ONLY public.worlds_robots
-ADD CONSTRAINT worlds_robots_world_id_robot_id_155bee4e_uniq UNIQUE (world_id, robot_id);
+-- ALTER TABLE ONLY public.worlds_robots
+-- ADD CONSTRAINT worlds_robots_world_id_robot_id_155bee4e_uniq UNIQUE (world_id, robot_id);
 
 --
 -- Name: worlds_robots worlds_robots_pkey; Type: CONSTRAINT; Schema: public; Owner: user-dev
